@@ -2,19 +2,18 @@
 <addons>
     <addon id="plugin.video.jarkotv" name="TV SK/CZ" version="1.0.0" provider-name="Jarko">
         <requires>
-            <import addon="xbmc.python" version="1.0.0"/>
+            <import addon="xbmc.python" version="3.0.0"/>
         </requires>
         <extension point="xbmc.python.pluginsource" library="main.py">
             <provides>video</provides>
         </extension>
         <extension point="xbmc.addon.metadata">
-            <summary lang="sk">Slovenské a České TV kanály</summary>
-            <description lang="sk">Sledovanie TV JOJ a ďalších staníc.</description>
+            <summary lang="sk">Sledovanie SK/CZ TV</summary>
+            <description lang="sk">Aplikácia pre sledovanie TV JOJ a českých staníc.</description>
             <platform>all</platform>
-            <assets>
-                <icon>icon.png</icon>
-            </assets>
-        </extension>
-    </addon>
-    
-    </addons>
+        </assets>
+            <icon>icon.png</icon>
+        </assets>
+    </extension>
+</addon>
+</addons>
