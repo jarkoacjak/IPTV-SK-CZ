@@ -4,59 +4,62 @@ import urllib.parse
 import xbmcgui
 import xbmcplugin
 
-# 1. Získanie ID a URL doplnku
-HANDLE = int(sys.argv[1])
-BASE_URL = sys.argv[0]
+# Získanie základných premenných od Kodi
+_url = sys.argv[0]
+_handle = int(sys.argv[1])
 
-def build_url(query):
-    """Pomocná funkcia na vytváranie odkazov v menu"""
-    return BASE_URL + '?' + urllib.parse.urlencode(query)
+def get_url(**kwargs):
+    """Vytvorí URL adresu pre prepojenie v menu"""
+    return _url + '?' + urllib.parse.urlencode(kwargs)
 
 def main_menu():
-    """Hlavná obrazovka: Výber Slovensko alebo Česko"""
+    """Vytvorí hlavné menu (priečinky)"""
     # SLOVENSKO
-    li_sk = xbmcgui.ListItem(label='[B]SLOVENSKÉ STANICE[/B]')
-    url_sk = build_url({'mode': 'list_sk'})
-    xbmcplugin.addDirectoryItem(handle=HANDLE, url=url_sk, listitem=li_sk, isFolder=True)
+    li_sk = xbmcgui.ListItem(label='[B]Slovenské TV[/B]')
+    url_sk = get_url(action='list_sk')
+    xbmcplugin.addDirectoryItem(handle=_handle, url=url_sk, listitem=li_sk, isFolder=True)
 
     # ČESKO
-    li_cz = xbmcgui.ListItem(label='[B]ČESKÉ STANICE[/B]')
-    url_cz = build_url({'mode': 'list_cz'})
-    xbmcplugin.addDirectoryItem(handle=HANDLE, url=url_cz, listitem=li_cz, isFolder=True)
+    li_cz = xbmcgui.ListItem(label='[B]České TV[/B]')
+    url_cz = get_url(action='list_cz')
+    xbmcplugin.addDirectoryItem(handle=_handle, url=url_cz, listitem=li_cz, isFolder=True)
 
-    xbmcplugin.endOfDirectory(HANDLE)
+    xbmcplugin.endOfDirectory(_handle)
 
-def list_slovak_tv():
+def list_sk():
     """Zoznam slovenských staníc"""
     # TV JOJ
     joj_url = "https://live.cdn.joj.sk/live/andromeda/joj-1080.m3u8"
-    # Dôležité hlavičky pre Jojku
+    # Dôležité: Bez User-Agent a Referer to Jojka neprehrá!
     headers = "|User-Agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) &Referer=https://www.joj.sk/"
     
     li = xbmcgui.ListItem(label='TV JOJ')
-    li.setInfo('video', {'title': 'TV JOJ Live'})
-    li.setProperty('IsPlayable', 'true')
-    # Pridanie loga (voliteľné)
     li.setArt({'thumb': 'https://upload.wikimedia.org/wikipedia/commons/4/4b/TV_JOJ_logo_2015.png'})
+    li.setInfo('video', {'title': 'TV JOJ Live', 'plot': 'Živé vysielanie TV JOJ'})
+    li.setProperty('IsPlayable', 'true')
     
-    xbmcplugin.addDirectoryItem(handle=HANDLE, url=joj_url + headers, listitem=li, isFolder=False)
+    xbmcplugin.addDirectoryItem(handle=_handle, url=joj_url + headers, listitem=li, isFolder=False)
+    xbmcplugin.endOfDirectory(_handle)
+
+def list_cz():
+    """Zoznam českých staníc"""
+    li = xbmcgui.ListItem(label='[I]České stanice pripravujeme...[/I]')
+    xbmcplugin.addDirectoryItem(handle=_handle, url='', listitem=li, isFolder=False)
+    xbmcplugin.endOfDirectory(_handle)
+
+def router(paramstring):
+    """Logika, ktorá rozhodne, čo sa má zobraziť"""
+    params = dict(urllib.parse.parse_qsl(paramstring))
     
-    xbmcplugin.endOfDirectory(HANDLE)
+    if params:
+        if params['action'] == 'list_sk':
+            list_sk()
+        elif params['action'] == 'list_cz':
+            list_cz()
+    else:
+        main_menu()
 
-def list_czech_tv():
-    """Zoznam českých staníc (zatiaľ prázdny)"""
-    li = xbmcgui.ListItem(label='[I]Tu zatiaľ nič nie je[/I]')
-    xbmcplugin.addDirectoryItem(handle=HANDLE, url='', listitem=li, isFolder=False)
-    xbmcplugin.endOfDirectory(HANDLE)
-
-# 2. Logika prepínania medzi menu (Routing)
-params = dict(urllib.parse.parse_qsl(sys.argv[2][1:]))
-mode = params.get('mode')
-
-if mode is None:
-    main_menu()
-elif mode == 'list_sk':
-    list_slovak_tv()
-elif mode == 'list_cz':
-    list_czech_tv()
+if __name__ == '__main__':
+    # Spustenie smerovača s parametrami od Kodi
+    router(sys.argv[2][1:])
     
